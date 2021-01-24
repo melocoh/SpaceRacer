@@ -9,6 +9,9 @@ EditorBuildSettings:
     path: Assets/Scenes/SceMainMenu.unity
     guid: 942e0dddf5aa65e4987a197896cae72e
   - enabled: 1
-    path: Assets/Scenes/SceRace.unity
+    path: Assets/Scenes/SceSever.unity
     guid: 2cda990e2423bbf4892e6590ba056729
+  - enabled: 1
+    path: Assets/Scenes/SceClient.unity
+    guid: 9147ebc9b57f7cd4198241b3f7514830
   m_configObjects: {}
