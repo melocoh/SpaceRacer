@@ -11,14 +11,10 @@ using UnityEngine;
 public class scrSeverControl : MonoBehaviour
 {
     //public GameObject goCarControl;
+    WebSocket websocket;
 
     private const int maxPlayers = 4;
     private int playerCount;
-
-
-
-
-
 
     public GameObject goCar0;
     public GameObject goCar1;
@@ -35,6 +31,10 @@ public class scrSeverControl : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        #if !UNITY_WEBGL || UNITY_EDITOR
+        websocket.DispatchMessageQueue();
+        #endif
+
         if (Input.GetMouseButtonDown(0))
         {
             carClicks0++;
@@ -46,6 +46,7 @@ public class scrSeverControl : MonoBehaviour
         goCar1.transform.position = new Vector3(-7f + 0.2f * carClicks1, 2.27f - 1.48f * 1, 0f);
         goCar2.transform.position = new Vector3(-7f + 0.2f * carClicks2, 2.27f - 1.48f * 2, 0f);
         goCar3.transform.position = new Vector3(-7f + 0.2f * carClicks3, 2.27f - 1.48f * 3, 0f);
+
     }
 
 
@@ -67,14 +68,25 @@ public class scrSeverControl : MonoBehaviour
     }
 
 
+    // Start is called before the first frame update
+    //public void Start()
+    //{
+    //    yourCarNumber = 0;
+    //    carClicks0 = 0;
+    //    carClicks1 = 0;
+    //    carClicks2 = 0;
+    //    carClicks3 = 0;
 
-
-
-
+    //    playerCount = 1;
+    //    //send socket
+        
+    //    CreateNewListenningThread();
+    //    Debug.Log("SERVER ONLINE");
+    //}
 
 
     // Start is called before the first frame update
-    public void Start()
+    async void Start()
     {
         yourCarNumber = 0;
         carClicks0 = 0;
@@ -84,20 +96,35 @@ public class scrSeverControl : MonoBehaviour
 
         playerCount = 1;
 
+        websocket = new WebSocket("ws://localhost:8080");
 
+        websocket.OnOpen += () =>
+        {
+            Debug.Log("Connection open!");
+        };
 
+        websocket.OnError += (e) =>
+        {
+            Debug.Log("Error! " + e);
+        };
 
+        websocket.OnClose += (e) =>
+        {
+            Debug.Log("Connection closed!");
+        };
 
-        //send socket
-        
+        websocket.OnMessage += (bytes) =>
+        {
+            // Reading a plain text message
+            var message = System.Text.Encoding.UTF8.GetString(bytes);
+            Debug.Log("Received OnMessage! (" + bytes.Length + " bytes) " + message);
+        };
 
+        // Keep sending messages at every 0.3s
+        InvokeRepeating("SendWebSocketMessage", 0.0f, 0.3f);
 
-        CreateNewListenningThread();
-        Debug.Log("SERVER ONLINE");
+        await websocket.Connect();
     }
-
-
-
 
 
 
@@ -202,32 +229,52 @@ public class scrSeverControl : MonoBehaviour
     //    thread.Start(bSend);
     //}
 
-    public void SendMessage(byte[] bSend, int lastDigit)
+    //public void SendMessage(byte[] bSend, int lastDigit)
+    //{
+    //    ////send socket
+    //    Socket send = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+    //    IPAddress sendip = IPAddress.Parse("224.5.6."+ lastDigit);
+    //    send.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(sendip));
+    //    send.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 2);
+    //    IPEndPoint sendipep = new IPEndPoint(sendip, 4560+ lastDigit);
+    //    send.Connect(sendipep);
+
+    //    send.Send(bSend, bSend.Length, SocketFlags.None);
+    //    send.Close();
+
+    //    if(bSend.Length==1)
+    //    Debug.Log("[sent] size: " + bSend.Length + " key: " + ((int)bSend[0]).ToString());
+    //    else if (bSend.Length == 2)
+    //        Debug.Log("[sent] size: " + bSend.Length + " key: " + ((int)bSend[0]).ToString() + " : " + ((int)bSend[1]).ToString());
+    //    else if (bSend.Length == 3)
+    //        Debug.Log("[sent] size: " + bSend.Length + " key: " + ((int)bSend[0]).ToString() + " : " + ((int)bSend[1]).ToString() + " : " + ((int)bSend[2]).ToString());
+    //    else
+    //        Debug.Log("[sent] size: " + bSend.Length + " key: " + ((int)bSend[0]).ToString());
+    //}
+
+
+    async void SendMessage(byte[] bSend)
     {
-        ////send socket
-        Socket send = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-        IPAddress sendip = IPAddress.Parse("224.5.6."+ lastDigit);
-        send.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(sendip));
-        send.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 2);
-        IPEndPoint sendipep = new IPEndPoint(sendip, 4560+ lastDigit);
-        send.Connect(sendipep);
+        if (websocket.State == WebSocketState.Open)
+        {
+            // Sending bytes
+            await websocket.Send(bSend);
 
-        send.Send(bSend, bSend.Length, SocketFlags.None);
-        send.Close();
-
-        if(bSend.Length==1)
-        Debug.Log("[sent] size: " + bSend.Length + " key: " + ((int)bSend[0]).ToString());
-        else if (bSend.Length == 2)
-            Debug.Log("[sent] size: " + bSend.Length + " key: " + ((int)bSend[0]).ToString() + " : " + ((int)bSend[1]).ToString());
-        else if (bSend.Length == 3)
-            Debug.Log("[sent] size: " + bSend.Length + " key: " + ((int)bSend[0]).ToString() + " : " + ((int)bSend[1]).ToString() + " : " + ((int)bSend[2]).ToString());
-        else
-            Debug.Log("[sent] size: " + bSend.Length + " key: " + ((int)bSend[0]).ToString());
+            if (bSend.Length == 1)
+                Debug.Log("[sent] size: " + bSend.Length + " key: " + ((int)bSend[0]).ToString());
+            else if (bSend.Length == 2)
+                Debug.Log("[sent] size: " + bSend.Length + " key: " + ((int)bSend[0]).ToString() + " : " + ((int)bSend[1]).ToString());
+            else if (bSend.Length == 3)
+                Debug.Log("[sent] size: " + bSend.Length + " key: " + ((int)bSend[0]).ToString() + " : " + ((int)bSend[1]).ToString() + " : " + ((int)bSend[2]).ToString());
+            else
+                Debug.Log("[sent] size: " + bSend.Length + " key: " + ((int)bSend[0]).ToString());
+        }
     }
 
-
-    
-
+    private async void OnApplicationQuit()
+    {
+        await websocket.Close();
+    }
 
     public void updateOthersToMyCar(byte clicks)
     {
