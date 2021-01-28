@@ -59,6 +59,7 @@ sysinfo.txt
 crashlytics-build.properties
 
 mel_exe/
+Web/
 
 Packages/manifest.json
 Packages/packages-lock.json
