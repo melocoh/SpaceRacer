@@ -8,11 +8,14 @@ const app = express();
 const server = createServer(app);
 const wss = new WebSocket.Server({ server });
 
+let wsArray = [];
+
 var playerCount = 0;
 var maxPlayers = 4;
 
 wss.on('connection', function(ws) {
-  console.log("client joined.");
+	console.log("client joined.");
+	wsArray.push(ws);
 
   // send "hello world" interval
   //const textInterval = setInterval(() => ws.send("hello world!"), 100);
@@ -41,7 +44,6 @@ wss.on('connection', function(ws) {
 server.listen(8080, function() {
   console.log('Listening on http://localhost:8080');
 });
-
 
 
 
@@ -89,7 +91,10 @@ let mesArray = Array.from(mes)
 		uint8View[0] = mesArray[0];
 		uint8View[1] = mesArray[1];
 		uint8View[2] = mesArray[2];
-		ws.send(uint8View);
+
+		  wsArray.forEach(sendws => {
+			  sendws.send(uint8View);
+		  });
 
 		break;
     default:
