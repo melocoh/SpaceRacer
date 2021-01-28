@@ -61,6 +61,7 @@ crashlytics-build.properties
 mel_exe/
 Web/
 EXE/
+node_modules/
 
 Packages/manifest.json
 Packages/packages-lock.json
