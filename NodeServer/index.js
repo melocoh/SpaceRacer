@@ -12,8 +12,8 @@ app.set('port', (process.env.PORT || 5000));
 // figure out what to use
 app.use(express.static(__dirname + '/Web'));
 
-app.get('/', function (request, response) {
-    response.send('Hello World!');
+app.get("/", function (req, res) {
+    res.render("index");
 });
 
 let wsArray = [];
