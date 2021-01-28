@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 
 public class ScrMainMenuControl : MonoBehaviour
 {
-    public GameObject goGlobal;
+    //public GameObject goGlobal;
 
     public void HostGame()
     {
@@ -14,7 +14,7 @@ public class ScrMainMenuControl : MonoBehaviour
 
     public void JoinGame()
     {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 2);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
     }
 
 

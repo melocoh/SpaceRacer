@@ -27,7 +27,7 @@ wss.on('connection', function(ws) {
 
     } else {
       console.log("binary received from client -> " + Array.from(data).join(", ") + "");
-	  HandleMessage(data);
+	  HandleMessage(data, ws);
     }
   });
 
@@ -46,7 +46,7 @@ server.listen(8080, function() {
 
 
 // needs to pass in a different parameter because byte array doesn't exist :'(
-function HandleMessage(mes) {
+function HandleMessage(mes, ws) {
 let mesArray = Array.from(mes)
 
 
@@ -65,7 +65,7 @@ let mesArray = Array.from(mes)
 		if (playerCount < maxPlayers) {
 		  
 			let buffer = new ArrayBuffer(2);
-			let uint8View = new UInt8Array(buffer);
+			let uint8View = new Uint8Array(buffer);
 			uint8View[0]=2;
 			uint8View[1]=playerCount;
 			playerCount++;
@@ -85,7 +85,7 @@ let mesArray = Array.from(mes)
 
 		//update the other clients
 	  	let buffer = new ArrayBuffer(3);
-		let uint8View = new UInt8Array(buffer);
+		let uint8View = new Uint8Array(buffer);
 		uint8View[0] = mesArray[0];
 		uint8View[1] = mesArray[1];
 		uint8View[2] = mesArray[2];

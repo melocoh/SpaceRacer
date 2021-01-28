@@ -7,6 +7,8 @@ using System.Text;
 using System.Threading;
 using UnityEngine;
 
+using NativeWebSocket;
+
 public class scrClientControl : MonoBehaviour
 {
     //public GameObject goCarControl;
@@ -38,25 +40,25 @@ public class scrClientControl : MonoBehaviour
     public void UpdateCarNumber(int carNum)
     {
         Debug.Log("UpdateCarNumber");
-        if(yourCarNumber==-1)
+        if (yourCarNumber == -1)
         {
             yourCarNumber = carNum;
             CreateNewListenningThread(yourCarNumber);
         }
-        
+
 
     }
 
     //// Update is called once per frame
     void Update()
     {
-        #if !UNITY_WEBGL || UNITY_EDITOR
-            websocket.DispatchMessageQueue();
-        #endif
+#if !UNITY_WEBGL || UNITY_EDITOR
+        websocket.DispatchMessageQueue();
+#endif
 
         if (Input.GetMouseButtonDown(0))
         {
-            int currentDistance=0;
+            int currentDistance = 0;
 
             if (yourCarNumber == 0)
             {
@@ -115,7 +117,7 @@ public class scrClientControl : MonoBehaviour
 
 
     // Start is called before the first frame update
-    public void Start()
+    public async void Start()
     {
         yourCarNumber = -1;
         carClicks0 = 0;
@@ -128,16 +130,16 @@ public class scrClientControl : MonoBehaviour
         // Store params
 
         //CreateConnectionListenningThread();
-        //Debug.Log("CLIENT ONLINE");
-        //byte[] sendBytes = new byte[1];
-        //sendBytes[0] = 1;
-        //SendMessage(sendBytes);
 
         websocket = new WebSocket("ws://localhost:8080");
 
         websocket.OnOpen += () =>
         {
             Debug.Log("Connection open!");
+            Debug.Log("CLIENT ONLINE");
+            byte[] sendBytes = new byte[1];
+            sendBytes[0] = 1;
+            SendMessage(sendBytes);
         };
 
         websocket.OnError += (e) =>
@@ -158,9 +160,10 @@ public class scrClientControl : MonoBehaviour
         };
 
         // Keep sending messages at every 0.3s
-        InvokeRepeating("SendWebSocketMessage", 0.0f, 0.3f);
+        // InvokeRepeating("SendWebSocketMessage", 0.0f, 0.3f);
 
         await websocket.Connect();
+
     }
 
 
@@ -191,7 +194,7 @@ public class scrClientControl : MonoBehaviour
 
         HandleMessage(b);
 
-        
+
     }
 
 
@@ -237,9 +240,9 @@ public class scrClientControl : MonoBehaviour
         Debug.Log(lastDigit.ToString());
         //recieve socket
         Socket recv = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-        IPEndPoint recvipep = new IPEndPoint(IPAddress.Any, 4560+ lastDigit);
+        IPEndPoint recvipep = new IPEndPoint(IPAddress.Any, 4560 + lastDigit);
         recv.Bind(recvipep);
-        IPAddress ip = IPAddress.Parse("224.5.6."+ lastDigit);
+        IPAddress ip = IPAddress.Parse("224.5.6." + lastDigit);
         recv.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(ip, IPAddress.Any));
 
 
@@ -293,7 +296,7 @@ public class scrClientControl : MonoBehaviour
 
 
 
-    public void SendMessage(byte[] bSend)
+    public async void SendMessage(byte[] bSend)
     {
         ////send socket
         //Socket send = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
