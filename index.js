@@ -4,13 +4,12 @@ const server = require('http').createServer(app);
 const WebSocket = require('ws');
 const wss = new WebSocket.Server({ server });
 const port = process.env.PORT || 5000;
-//app.set('port', (process.env.PORT || 8080));
 
-// figure out what to use
 app.use(express.static(__dirname + '/Web'));
 
 // app starts from index
 app.get("/", function (req, res) {
+    console.log(__dirname);
     res.sendFile(path.join(__dirname, '/Web', 'index.html'))
 });
 

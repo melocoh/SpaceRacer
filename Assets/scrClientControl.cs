@@ -140,7 +140,7 @@ public class scrClientControl : MonoBehaviour
 
         //CreateConnectionListenningThread();
 
-        websocket = new WebSocket("ws://localhost:8085");
+        websocket = new WebSocket("ws://localhost:5000");
 
         websocket.OnOpen += () =>
         {
