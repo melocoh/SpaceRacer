@@ -1,18 +1,24 @@
-const crypto = require('crypto');
 const express = require('express');
-const { createServer } = require('http');
+const app = express();
 const WebSocket = require('ws');
 
-const app = express();
-
-const server = createServer(app);
-const wss = new WebSocket.Server({ server });
+const server = require('http').createServer(app);
 const port = process.env.PORT || 8080;
 
-let wsArray = [];
+const wss = new WebSocket.Server({ server });
 
-var playerCount = 0;
-var maxPlayers = 4;
+app.set('port', (process.env.PORT || 5000));
+
+// figure out what to use
+app.use(express.static(__dirname + '/Web'));
+
+app.get('/', function (request, response) {
+    response.send('Hello World!');
+});
+
+let wsArray = [];
+let playerCount = 0;
+let maxPlayers = 4;
 
 /* On connection */
 wss.on('connection', function (ws) {
