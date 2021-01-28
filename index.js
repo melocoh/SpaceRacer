@@ -11,6 +11,7 @@ app.use(express.static(__dirname + '/Web'));
 
 // app starts from index
 app.get("/", function (req, res) {
+    console.log(__dirname);
     res.sendFile(path.join(__dirname, '/Web', 'index.html'))
 });
 
