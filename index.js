@@ -7,11 +7,11 @@ const port = process.env.PORT || 8080;
 //app.set('port', (process.env.PORT || 8080));
 
 // figure out what to use
-app.use(express.static(__dirname + '../Web'));
+app.use(express.static(__dirname + '/Web'));
 
 // app starts from index
 app.get("/", function (req, res) {
-    res.sendFile(path.join(__dirname, '../Web', 'index.html'))
+    res.sendFile(path.join(__dirname, '/Web', 'index.html'))
 });
 
 // app.get("/", function (req, res) {});
