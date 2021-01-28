@@ -10,9 +10,9 @@ const port = process.env.PORT || 8080;
 app.use(express.static(__dirname + '../Web'));
 
 // app starts from index
-//app.get("/", function (req, res) {
-//    res.render("index");
-//});
+app.get("/", function (req, res) {
+    res.sendFile(path.join(__dirname, '../Web', 'index.html'))
+});
 
 // app.get("/", function (req, res) {});
 let clients = [];
