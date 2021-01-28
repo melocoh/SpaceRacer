@@ -32,7 +32,7 @@ public class scrSeverControl : MonoBehaviour
     void Update()
     {
         #if !UNITY_WEBGL || UNITY_EDITOR
-        websocket.DispatchMessageQueue();
+            websocket.DispatchMessageQueue();
         #endif
 
         if (Input.GetMouseButtonDown(0))

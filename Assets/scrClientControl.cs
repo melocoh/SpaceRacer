@@ -18,7 +18,7 @@ public class scrClientControl : MonoBehaviour
     //IPEndPoint remoteEndPoint;
     //private byte playerNumber;
 
-
+    WebSocket websocket;
 
 
     public GameObject goCar0;
@@ -50,6 +50,10 @@ public class scrClientControl : MonoBehaviour
     //// Update is called once per frame
     void Update()
     {
+        #if !UNITY_WEBGL || UNITY_EDITOR
+            websocket.DispatchMessageQueue();
+        #endif
+
         if (Input.GetMouseButtonDown(0))
         {
             int currentDistance=0;
@@ -123,15 +127,40 @@ public class scrClientControl : MonoBehaviour
 
         // Store params
 
+        //CreateConnectionListenningThread();
+        //Debug.Log("CLIENT ONLINE");
+        //byte[] sendBytes = new byte[1];
+        //sendBytes[0] = 1;
+        //SendMessage(sendBytes);
 
+        websocket = new WebSocket("ws://localhost:8080");
 
+        websocket.OnOpen += () =>
+        {
+            Debug.Log("Connection open!");
+        };
 
+        websocket.OnError += (e) =>
+        {
+            Debug.Log("Error! " + e);
+        };
 
-        CreateConnectionListenningThread();
-        Debug.Log("CLIENT ONLINE");
-        byte[] sendBytes = new byte[1];
-        sendBytes[0] = 1;
-        SendMessage(sendBytes);
+        websocket.OnClose += (e) =>
+        {
+            Debug.Log("Connection closed!");
+        };
+
+        websocket.OnMessage += (bytes) =>
+        {
+            // Reading a plain text message
+            var message = System.Text.Encoding.UTF8.GetString(bytes);
+            Debug.Log("Received OnMessage! (" + bytes.Length + " bytes) " + message);
+        };
+
+        // Keep sending messages at every 0.3s
+        InvokeRepeating("SendWebSocketMessage", 0.0f, 0.3f);
+
+        await websocket.Connect();
     }
 
 
@@ -267,17 +296,38 @@ public class scrClientControl : MonoBehaviour
     public void SendMessage(byte[] bSend)
     {
         ////send socket
-        Socket send = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-        IPAddress sendip = IPAddress.Parse("224.5.6.0");
-        send.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(sendip));
-        send.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 2);
-        IPEndPoint sendipep = new IPEndPoint(sendip, 4560);
-        send.Connect(sendipep);
+        //Socket send = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+        //IPAddress sendip = IPAddress.Parse("224.5.6.0");
+        //send.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(sendip));
+        //send.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 2);
+        //IPEndPoint sendipep = new IPEndPoint(sendip, 4560);
+        //send.Connect(sendipep);
 
-        send.Send(bSend, bSend.Length, SocketFlags.None);
-        send.Close();
+        //send.Send(bSend, bSend.Length, SocketFlags.None);
+        //send.Close();
 
-        Debug.Log("[sent] size: " + bSend.Length + " key: " + ((int)bSend[0]).ToString());
+        //Debug.Log("[sent] size: " + bSend.Length + " key: " + ((int)bSend[0]).ToString());
+
+        if (websocket.State == WebSocketState.Open)
+        {
+            // Sending bytes
+            await websocket.Send(bSend);
+
+            if (bSend.Length == 1)
+                Debug.Log("[sent] size: " + bSend.Length + " key: " + ((int)bSend[0]).ToString());
+            else if (bSend.Length == 2)
+                Debug.Log("[sent] size: " + bSend.Length + " key: " + ((int)bSend[0]).ToString() + " : " + ((int)bSend[1]).ToString());
+            else if (bSend.Length == 3)
+                Debug.Log("[sent] size: " + bSend.Length + " key: " + ((int)bSend[0]).ToString() + " : " + ((int)bSend[1]).ToString() + " : " + ((int)bSend[2]).ToString());
+            else
+                Debug.Log("[sent] size: " + bSend.Length + " key: " + ((int)bSend[0]).ToString());
+        }
+    }
+
+
+    private async void OnApplicationQuit()
+    {
+        await websocket.Close();
     }
 
 
@@ -342,9 +392,5 @@ public class scrClientControl : MonoBehaviour
         //s.SendTo(sendMessage, sendMessage.Length, SocketFlags.None, new IPEndPoint(IPAddress.Parse("224.5.6.7"), 4567));
         Debug.Log("client-sent: update my car to others " + mes[1] + ":" + mes[2]);
     }
-
-
-
-
 
 }

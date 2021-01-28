@@ -8,14 +8,17 @@ const app = express();
 const server = createServer(app);
 const wss = new WebSocket.Server({ server });
 
+var playerCount = 0;
+var maxPlayers = 4;
+
 wss.on('connection', function(ws) {
   console.log("client joined.");
 
   // send "hello world" interval
-  const textInterval = setInterval(() => ws.send("hello world!"), 100);
+  //const textInterval = setInterval(() => ws.send("hello world!"), 100);
 
   // send random bytes interval
-  const binaryInterval = setInterval(() => ws.send(crypto.randomBytes(8).buffer), 110);
+  //const binaryInterval = setInterval(() => ws.send(crypto.randomBytes(8).buffer), 110);
 
   ws.on('message', function(data) {
     if (typeof(data) === "string") {
@@ -24,6 +27,7 @@ wss.on('connection', function(ws) {
 
     } else {
       console.log("binary received from client -> " + Array.from(data).join(", ") + "");
+	  HandleMessage(data);
     }
   });
 
@@ -38,65 +42,59 @@ server.listen(8080, function() {
   console.log('Listening on http://localhost:8080');
 });
 
-function SendMessage() {
-  // creating an array of bytes, with size 1024
-  let arr = new Uint8Array(1024);
-
-}
 
 
 
 // needs to pass in a different parameter because byte array doesn't exist :'(
-function HandleMessage(byte[] mes) {
+function HandleMessage(mes) {
+let mesArray = Array.from(mes)
 
-  if (mes.length == 0) {
+
+
+  if (mesArray.length == 0) {
     return;
   }
 
   // needs to change byte
-  byte key = mes[0];
+  let key = mesArray[0];
 
 
   switch (key) {
     case 1:
-      //new player
-      if (playerCount < maxPlayers) {
-        byte[] sMes = new byte[2];
-        sMes[0] = 2;
-        sMes[1] = (byte)playerCount;
-        playerCount++;
-
-        SendMessage(sMes, 1);
-        Debug.Log("MESSAGE SENT!!");
-      }
+		//new player
+		if (playerCount < maxPlayers) {
+		  
+			let buffer = new ArrayBuffer(2);
+			let uint8View = new UInt8Array(buffer);
+			uint8View[0]=2;
+			uint8View[1]=playerCount;
+			playerCount++;
+		
+			ws.send(uint8View);
+			console.log("MESSAGE SENT!!");
+		}
 
       break;
     case 2:
-      // code block
+		// code block
       break;
     case 3:
-      byte playerID = mes[1];
-      byte playerClicks = mes[2];
-      Debug.Log("server-receieved: car update " + playerID.ToString() + ":" + playerClicks.ToString());
-      UpdateCar(playerID, playerClicks);
+		let playerID = mesArray[1];
+		let playerClicks = mesArray[2];
+		console.log("server-receieved: car update " + playerID.toString() + " : " + playerClicks.toString());
 
-      //update the other clients
-      byte[] copyMessage = new byte[3];
-      copyMessage[0] = mes[0];
-      copyMessage[1] = mes[1];
-      copyMessage[2] = mes[2];
-      if (playerID != 1)
-        SendMessage(copyMessage, 2);
-      if (playerID != 2)
-        SendMessage(copyMessage, 3);
-      if (playerID != 3)
-        SendMessage(copyMessage, 4);
+		//update the other clients
+	  	let buffer = new ArrayBuffer(3);
+		let uint8View = new UInt8Array(buffer);
+		uint8View[0] = mesArray[0];
+		uint8View[1] = mesArray[1];
+		uint8View[2] = mesArray[2];
+		ws.send(uint8View);
 
-
-      break;
+		break;
     default:
-      // code block
-      break;
-  }
+		// code block
+		break;
+	}
 
 }
