@@ -1,13 +1,17 @@
 const crypto = require('crypto');
 const express = require('express');
-const { createServer } = require('http');
+const {
+    createServer
+} = require('http');
 const WebSocket = require('ws');
 
 const app = express();
 
 const server = createServer(app);
-const wss = new WebSocket.Server({ server });
-const port = process.env.PORT || 8080;
+const wss = new WebSocket.Server({
+    server
+});
+const port = process.env.PORT || 8085;
 
 let wsArray = [];
 

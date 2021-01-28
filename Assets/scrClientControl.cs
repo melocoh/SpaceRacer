@@ -27,10 +27,12 @@ public class scrClientControl : MonoBehaviour
     public GameObject goCar1;
     public GameObject goCar2;
     public GameObject goCar3;
+    public GameObject winText;
     int carClicks0;
     int carClicks1;
     int carClicks2;
     int carClicks3;
+    bool gameover = false;
     //public GameObject goClientControl;
 
 
@@ -56,7 +58,7 @@ public class scrClientControl : MonoBehaviour
         websocket.DispatchMessageQueue();
 #endif
 
-        if (Input.GetMouseButtonDown(0))
+        if (!gameover && Input.GetKeyDown("space"))
         {
             int currentDistance = 0;
 
@@ -79,6 +81,13 @@ public class scrClientControl : MonoBehaviour
             {
                 carClicks3++;
                 currentDistance = carClicks3;
+            }
+
+            if(currentDistance > 65)
+            {
+                winText.SetActive(true);
+                gameover = true;
+                Time.timeScale = 0;
             }
 
             UpdateCar(yourCarNumber, currentDistance);
@@ -131,7 +140,7 @@ public class scrClientControl : MonoBehaviour
 
         //CreateConnectionListenningThread();
 
-        websocket = new WebSocket("ws://localhost:8080");
+        websocket = new WebSocket("ws://localhost:8085");
 
         websocket.OnOpen += () =>
         {
