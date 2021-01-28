@@ -1,29 +1,33 @@
 const express = require('express');
 const app = express();
-const WebSocket = require('ws');
-
 const server = require('http').createServer(app);
-const port = process.env.PORT || 8080;
-
+const WebSocket = require('ws');
 const wss = new WebSocket.Server({ server });
-
-app.set('port', (process.env.PORT || 5000));
+const port = process.env.PORT || 8080;
+//app.set('port', (process.env.PORT || 8080));
 
 // figure out what to use
 app.use(express.static(__dirname + '/Web'));
 
+// app starts from index
 app.get("/", function (req, res) {
     res.render("index");
 });
 
-let wsArray = [];
+// app.get("/", function (req, res) {});
+let clients = [];
 let playerCount = 0;
 let maxPlayers = 4;
+
+/* Listen on port */
+server.listen(port, function () {
+    console.log("Server listening at port %d", port);
+});
 
 /* On connection */
 wss.on('connection', function (ws) {
     console.log("client joined.");
-    wsArray.push(ws);
+    clients.push(ws);
 
     /* Handle connected users */
     ws.on('message', function (data) {
@@ -41,11 +45,6 @@ wss.on('connection', function (ws) {
     ws.on('close', function () {
         console.log("client left.");
     });
-});
-
-/* Listen on port */
-server.listen(port, function () {
-    console.log("Server listening at port %d", port);
 });
 
 /* Handles socket messages */
@@ -90,7 +89,7 @@ function HandleMessage(mes, ws) {
             uint8View[2] = mesArray[2];
 
             // broadcasts movement / click to all clients
-            wsArray.forEach(sendws => {
+            clients.forEach(sendws => {
                 sendws.send(uint8View);
             });
             break;
