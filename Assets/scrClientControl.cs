@@ -142,7 +142,7 @@ public class scrClientControl : MonoBehaviour
 
         // websocket = new WebSocket("ws://localhost:5000");
 
-        websocket = new WebSocket("ws://space-racerz.herokuapp.com/");
+        websocket = new WebSocket("wss://space-racerz.herokuapp.com/");
 
         websocket.OnOpen += () =>
         {
