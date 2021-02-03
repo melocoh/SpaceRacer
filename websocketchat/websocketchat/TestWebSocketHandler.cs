@@ -10,28 +10,73 @@ namespace websocketchat
     {
         private static WebSocketCollection clients = new WebSocketCollection();
 
-        private string name;
-
+        private static int playerCount = 0;
+        private static int maxPlayers = 4;
 
         public override void OnOpen()
 
         {
-            this.name = this.WebSocketContext.QueryString["name"];
             clients.Add(this);
-            clients.Broadcast(name + " has connected.");
         }
 
-        public override void OnMessage(string message)
+        public override void OnMessage(byte[] message)
 
         {
-            clients.Broadcast(string.Format("{0} said: {1}", name, message));
+            HandleMessage(message);
         }
 
         public override void OnClose()
 
         {
             clients.Remove(this);
-            clients.Broadcast(string.Format("{0} has gone away.", name));
+        }
+
+        /* Handles socket messages */
+        public void HandleMessage(byte[] mesArray)
+        {
+            if (mesArray.Length == 0)
+            {
+                return;
+            }
+
+            byte key = mesArray[0];
+
+            switch (key)
+            {
+                case 1:
+                    //new player
+                    if (playerCount < maxPlayers)
+                    {
+                        Byte[] byteArray = new Byte[2];
+                        byteArray[0] = 2;
+                        byteArray[1] = (Byte)playerCount;
+                        playerCount++;
+
+                        // sends player position
+                        clients.Broadcast(byteArray);
+                    }
+                    break;
+                case 2:
+                    // code block
+                    break;
+                case 3:
+                    // onClick
+                    byte playerID = mesArray[1];
+                    byte playerClicks = mesArray[2];
+
+                    //update the other clients
+                    Byte[] byteArray3 = new Byte[3];
+                    byteArray3[0] = mesArray[0];
+                    byteArray3[1] = mesArray[1];
+                    byteArray3[2] = mesArray[2];
+
+                    // broadcasts movement / click to all clients
+                    clients.Broadcast(byteArray3);
+                    break;
+                default:
+                    // code block
+                    break;
+            }
         }
     }
 }

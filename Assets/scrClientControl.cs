@@ -118,13 +118,6 @@ public class scrClientControl : MonoBehaviour
         //updateOthersToMyCar((byte)clicks);
     }
 
-
-
-
-
-
-
-
     // Start is called before the first frame update
     public async void Start()
     {
@@ -141,8 +134,8 @@ public class scrClientControl : MonoBehaviour
         //CreateConnectionListenningThread();
 
         // websocket = new WebSocket("ws://localhost:5000");
-
-        websocket = new WebSocket("wss://space-racerz.herokuapp.com/");
+        websocket = new WebSocket("ws://localhost:53707/ws.ashx");
+        //websocket = new WebSocket("wss://space-racerz.herokuapp.com/");
 
         websocket.OnOpen += () =>
         {
