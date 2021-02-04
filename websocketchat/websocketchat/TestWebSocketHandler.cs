@@ -29,6 +29,11 @@ namespace websocketchat
 
         {
             clients.Remove(this);
+            
+            if(clients.Count == 0)
+            {
+                playerCount = 0;
+            }
         }
 
         /* Handles socket messages */
@@ -67,11 +72,17 @@ namespace websocketchat
                     //update the other clients
                     Byte[] byteArray3 = new Byte[3];
                     byteArray3[0] = mesArray[0];
-                    byteArray3[1] = mesArray[1];
-                    byteArray3[2] = mesArray[2];
+                    byteArray3[1] = mesArray[1]; // player number
+                    byteArray3[2] = mesArray[2]; // player position
 
                     // broadcasts movement / click to all clients
                     clients.Broadcast(byteArray3);
+
+                    if (playerClicks > 65)
+                    {
+                        clients.Clear();
+                        playerCount = 0;
+                    }
                     break;
                 default:
                     // code block
